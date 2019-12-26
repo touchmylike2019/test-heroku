@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
 const config = require('./config')
+const users = require('./controllers/user.controller')
 const app = express()
 
 const MONGODB_URI = config.mogodburi
@@ -19,6 +20,8 @@ app.get('/', (req, res) => {
         connect: 'pass'
     })
 })
+
+app.use('/api/users', users)
 
 
 mongoose.connect(MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true })
