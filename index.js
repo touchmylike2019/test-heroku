@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
     res.send(`Hello World`)
 })
 
-mongoose.connect('mongodb://localhost:27017/Data'|| MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true }).then(
+mongoose.connect(MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true }).then(
     () => console.log(`Connect database success`),
     err => console.log(`Connect database fail: ${err}`)
 )
