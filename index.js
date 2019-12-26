@@ -7,6 +7,9 @@ const app = express()
 
 const MONGODB_URI = config.mogodburi
 
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
 app.use(bodyParser.json())
 
 app.get('/', (req, res) => {
@@ -14,6 +17,7 @@ app.get('/', (req, res) => {
         connect: 'pass'
     })
 })
+
 
 mongoose.connect(MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true })
     .then(
