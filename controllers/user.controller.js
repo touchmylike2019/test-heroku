@@ -8,7 +8,7 @@ const config = require('../config')
 const router = express.Router()
 
 const validateEmail = (email) => {
-    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    var re = /^(([^<>()[\]\\.,:\s@\"]+(\.[^<>()[\]\\.,:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     return re.test(email)
 }
 
@@ -21,19 +21,19 @@ const checkUserUniqueness = (field, value) => {
             } else {
                 res = { error: { [field]: "" }, isUnique: true }
             }
-            return res;
+            return res
         })
         .catch(err => console.log(err))
 }
 
 router.post('/validate', async (req, res) => {
-    const { field, value } = req.body;
-    const { error, isUnique } = await checkUserUniqueness(field, value);
+    const { field, value } = req.body
+    const { error, isUnique } = await checkUserUniqueness(field, value)
 
     if (isUnique) {
-        res.json({ success: 'success' });
+        res.json({ success: 'success' })
     } else {
-        res.json({ error });
+        res.json({ error })
     }
 })
 
@@ -46,16 +46,16 @@ router.post('/signup', (req, res) => {
 
     const reqBody = { name, username, email, password, confirmPassword }
 
-    let errors = {};
+    let errors = {}
     Object.keys(reqBody).forEach(async field => {
         if (reqBody[field] === '') {
             errors = {...errors, [field]: 'This field is required'}
         }
         if (field === 'username' || field === 'email') {
-            const value = reqBody[field];
-            const { error, isUnique } = await checkUserUniqueness(field, value);
+            const value = reqBody[field]
+            const { error, isUnique } = await checkUserUniqueness(field, value)
             if (!isUnique) {
-                errors = {...errors, ...error};
+                errors = {...errors, ...error}
             }
         }
         if (field === 'email' && !validateEmail(reqBody[field])) {
@@ -67,10 +67,10 @@ router.post('/signup', (req, res) => {
         if (field === 'confirmPassword' && confirmPassword !== password) {
             errors = {...errors, [field]: 'Passwords do not match'}
         }
-    });
+    })
 
     if (Object.keys(errors).length > 0) {
-        res.json({ errors });
+        res.json({ errors })
     } else {
         const newUser = new User({
             name: name,
@@ -81,11 +81,11 @@ router.post('/signup', (req, res) => {
 
         // Generate the Salt
         bcrypt.genSalt(10, (err, salt) => {
-            if(err) return err;
+            if(err) return err
             // Create the hashed password
             bcrypt.hash(newUser.password, salt, (err, hash) => {
-                if(err) return err;
-                newUser.password = hash;
+                if(err) return err
+                newUser.password = hash
                 // Save the User
                 newUser.save(function(err){
                     if(err) return err
@@ -100,7 +100,7 @@ router.post('/login', (req, res) => {
     const username = req.body.username || ''
     const password = req.body.password || ''
 
-    let errors = {};
+    let errors = {}
 
     if (username === '') {
         errors = {...errors, username: 'This field is required' }
@@ -113,26 +113,35 @@ router.post('/login', (req, res) => {
         res.json({ errors })
     } else {
         User.findOne({username: username}, (err, user) => {
-            if (err) throw err;
+            if (err) throw err
             if (Boolean(user)) {
                 // Match Password
                 bcrypt.compare(password, user.password, (err, isMatch) => {
-                    if (err) return err;
+                    if (err) return err
                     if (isMatch) {
                         const token = jwt.sign({
                                 id: user._id,
                                 username: user.username
-                            }, config.jwtSecret);
+                            }, config.jwtSecret)
                         res.json({ token, success: 'success' })
                     } else {
-                       res.json({ errors: { invalidCredentials: 'Invalid Username or Password' } });
+                       res.json({ errors: { invalidCredentials: 'Invalid Username or Password' } })
                     }
-                });
+                })
             } else {
-                res.json({ errors: { invalidCredentials: 'Invalid Username or Password' } });
+                res.json({ errors: { invalidCredentials: 'Invalid Username or Password' } })
             }
-        });
+        })
     }
-});
+})
+
+router.put('/update_status/:id', async (req, res) => {
+    try {
+        const updatedUser = await User.findOneAndUpdate(req.params.id, req.body)
+        res.send({ message: 'The user was updated' })
+      } catch(err) {
+        res.status(400).json({ error: err })
+      }
+})
 
 module.exports = router

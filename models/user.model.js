@@ -23,8 +23,16 @@ const UserSchema = mongoose.Schema({
         type: Boolean,
         default: false,
         required: true
+    },
+    status_message: {
+        type: String,
+        default: ''
+    },
+    timestamps: {
+        type : Date, 
+        default: Date.now
     }
-});
+})
 
 const User = mongoose.model('User', UserSchema)
 
