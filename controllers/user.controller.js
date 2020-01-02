@@ -135,9 +135,19 @@ router.post('/login', (req, res) => {
     }
 })
 
+router.get('/show_status/:id', async (req, res) => {
+    try {
+        await User.findOne({username: req.params.id}, (err, doc) => {
+            res.json(doc.status_message)
+        })
+    } catch(err) {
+        res.status(400).json({ error: err })
+    }
+})
+
 router.put('/update_status/:id', async (req, res) => {
     try {
-        const updatedUser = await User.findOneAndUpdate(req.params.id, req.body)
+        await User.findOneAndUpdate(req.params.id, req.body)
         res.send({ message: 'The user was updated' })
       } catch(err) {
         res.status(400).json({ error: err })
